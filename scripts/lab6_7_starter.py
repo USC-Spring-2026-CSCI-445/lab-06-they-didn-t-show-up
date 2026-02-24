@@ -136,6 +136,20 @@ class ObstacleFreeWaypointController:
 
         # Calculate error in position and orientation
         ######### Your code starts here #########
+        distance_error = math.sqrt((goal_position["x"] - self.current_position["x"])**2 + (goal_position["y"] - self.current_position["y"])**2)
+
+        dx = goal_position["x"] - self.current_position["x"]
+        dy = goal_position["y"] - self.current_position["y"]
+
+        theta_desired = math.atan2(dy, dx)
+        if theta_desired < 0:
+            theta_desired = 2 * math.pi + theta_desired
+        angle_error = theta_desired - self.current_position["theta"]
+
+        if angle_error > math.pi:
+            angle_error -= 2 * math.pi
+        elif angle_error < -math.pi:
+            angle_error += 2 * math.pi
 
         ######### Your code ends here #########
 
@@ -151,6 +165,33 @@ class ObstacleFreeWaypointController:
 
             # Travel through waypoints one at a time, checking if robot is close enough
             ######### Your code starts here #########
+            error = self.calculate_error(self.waypoints[current_waypoint_idx])
+
+            if error is None:
+                continue
+            distance_error, angle_error = error
+
+            t = time()
+            if abs(distance_error) < .05:
+                current_waypoint_idx += 1
+                if current_waypoint_idx >= len(self.waypoints):
+                    ctrl_msg.linear.x = 0
+                    ctrl_msg.angular.z = 0
+                    self.robot_ctrl_pub.publish(ctrl_msg)
+                    rospy.loginfo("Reached final waypoint!")
+                    return
+                else:
+                    self.goal_position = self.waypoints[current_waypoint_idx]
+                    continue
+            else:
+                ctrl_msg.linear.x = self.baseVel
+            if abs(angle_error) < .05:
+                ctrl_msg.angular.z = 0
+            else:
+                uang = self.PconRota.control(angle_error, t)
+                ctrl_msg.angular.z = uang
+
+            self.robot_ctrl_pub.publish(ctrl_msg)
 
             ######### Your code ends here #########
             rate.sleep()
