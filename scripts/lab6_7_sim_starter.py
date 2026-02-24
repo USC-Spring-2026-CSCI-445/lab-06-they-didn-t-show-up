@@ -428,8 +428,8 @@ class ObstacleAvoidingWaypointController:
     def control_robot(self):
         rate = rospy.Rate(10)  # 20 Hz
 
-        current_waypoint_idx = 0
-        distance_from_wall_safety = 1.0
+        #current_waypoint_idx = 0
+        distance_from_wall_safety = 1.0 #idk what this is for
         cone_angle = radians(5)
 
         while not rospy.is_shutdown():
@@ -437,7 +437,13 @@ class ObstacleAvoidingWaypointController:
             if self.current_position is None or self.laserscan is None:
                 sleep(0.01)
                 continue
-
+            distance = min(distances)
+            if distance < self.wall_following_desired_distance:
+                msg = self.obstacle_avoiding_control()  #Function not complete
+            else:
+                msg = self.waypoint_tracking_control(self.waypoints[self.index])
+            
+            self.robot_ctrl_pub.publish(msg)
             # Travel through waypoints, checking if there is an obstacle in the way. Transition to obstacle avoidance if necessary
             ######### Your code starts here #########
 
