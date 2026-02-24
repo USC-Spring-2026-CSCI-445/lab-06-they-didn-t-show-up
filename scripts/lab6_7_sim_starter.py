@@ -197,6 +197,12 @@ class ObstacleFreeWaypointController:
 
             # Travel through waypoints one at a time, checking if robot is close enough
             ######### Your code starts here #########
+            error = self.calculate_error()
+
+            if error is None:
+                continue
+            distance_error, angle_error = error
+
             t = time()
             if abs(distance_error) < .05:
                 current_waypoint_idx += 1
