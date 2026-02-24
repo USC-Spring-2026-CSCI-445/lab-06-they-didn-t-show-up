@@ -5,7 +5,10 @@ from math import radians, inf, sqrt, atan2, pi, isinf, cos, sin, degrees
 from time import sleep, time
 import queue
 import math
+<<<<<<< HEAD
 
+=======
+>>>>>>> aa8dfecb832f7e469577c4c34a578b334f078d57
 import rospy
 from geometry_msgs.msg import Twist, Point32, Vector3, Quaternion, Point
 from nav_msgs.msg import Odometry
@@ -174,10 +177,10 @@ class ObstacleFreeWaypointController:
 
         # Calculate error in position and orientation
         ######### Your code starts here #########
-        distance_error = math.sqrt((self.goal_position["x"] - self.current_position["x"])**2 + (self.goal_position["y"] - self.current_position["y"])**2)
+        distance_error = math.sqrt((goal_position["x"] - self.current_position["x"])**2 + (goal_position["y"] - self.current_position["y"])**2)
 
-        dx = self.goal_position["x"] - self.current_position["x"]
-        dy = self.goal_position["y"] - self.current_position["y"]
+        dx = goal_position["x"] - self.current_position["x"]
+        dy = goal_position["y"] - self.current_position["y"]
 
         theta_desired = math.atan2(dy, dx)
         if theta_desired < 0:
@@ -198,7 +201,7 @@ class ObstacleFreeWaypointController:
 
             # Travel through waypoints one at a time, checking if robot is close enough
             ######### Your code starts here #########
-            error = self.calculate_error()
+            error = self.calculate_error(self.waypoints[current_waypoint_idx])
 
             if error is None:
                 continue
@@ -222,6 +225,8 @@ class ObstacleFreeWaypointController:
             else:
                 uang = self.PconRota.control(angle_error, t)
                 ctrl_msg.angular.z = uang
+
+            self.robot_ctrl_pub.publish(ctrl_msg)
             ######### Your code ends here #########
             rate.sleep()
 
