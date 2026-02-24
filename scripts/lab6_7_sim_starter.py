@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from math import radians, inf, sqrt, atan2, pi, isinf, cos, sin, degrees
 from time import sleep, time
 import queue
+import math
 
 import rospy
 from geometry_msgs.msg import Twist, Point32, Vector3, Quaternion, Point
@@ -249,7 +250,8 @@ class ObstacleAvoidingWaypointController:
 
         # Add PID controllers here for obstacle avoidance and waypoint following
         ######### Your code starts here #########
-
+        self.index = 0
+        self.PconWayP = PIDController(1,.1,1,0, -2.84, 2.84) # waypoint following
         ######### Your code ends here #########
 
     def robot_laserscan_callback(self, msg: LaserScan):
@@ -277,16 +279,54 @@ class ObstacleAvoidingWaypointController:
 
     def waypoint_tracking_control(self, goal_position: Dict):
 
+        ctrl_msg = Twist()
         if self.current_position is None:
             return None
 
+        # Calculate error in position and orientation
         ######### Your code starts here #########
+        distance_error = math.sqrt((goal_position["x"] - self.current_position["x"])**2 + (self.goal_position["y"] - self.current_position["y"])**2)
 
+        dx = goal_position["x"] - self.current_position["x"]
+        dy = goal_position["y"] - self.current_position["y"]
+
+        theta_desired = math.atan2(dy, dx)
+        if theta_desired < 0:
+            theta_desired = 2 * math.pi + theta_desired
+        angle_error = theta_desired - self.current_position["theta"]
+        
+        ######### Your code ends here #########
+
+        # Ensure angle error is within -pi to pi range
+        if angle_error > math.pi:
+            angle_error -= 2 * math.pi
+        elif angle_error < -math.pi:
+            angle_error += 2 * math.pi
+        ######### Your code starts here #########
+        t = time()
+
+        if angle_error is None:
+            return None
+        if distance_error is None:
+            return None
+        if abs(distance_error) < .05:
+                ctrl_msg.linear.x = 0
+                ctrl_msg.linear.y = 0
+                self.index = max(self.index+1,len(self.waypoints) - 1)
+        else:
+                ctrl_msg.linear.x = self.baseVel
+        if abs(angle_error) < .05:
+                ctrl_msg.angular.z = 0
+        else:
+                uang = self.PconRota.control(angle_error, t)
+                ctrl_msg.angular.z = uang
+        
         ######### Your code ends here #########
 
         rospy.loginfo(
             f"distance to target: {distance_error:.2f}\tangle error: {angle_error:.2f}\tcommanded linear vel: {cmd_linear_vel:.2f}\tcommanded angular vel: {cmd_angular_vel:.2f}"
         )
+        return ctrl_msg
 
     def obstacle_avoiding_control(self, visualize: bool = True):
 
@@ -386,7 +426,7 @@ class ObstacleAvoidingWaypointController:
         cone_angle = radians(5)
 
         while not rospy.is_shutdown():
-
+            distances = self.laserscan_distances_to_point(self.waypoints[self.index], cone_angle)
             if self.current_position is None or self.laserscan is None:
                 sleep(0.01)
                 continue
