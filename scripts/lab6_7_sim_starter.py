@@ -188,6 +188,10 @@ class ObstacleFreeWaypointController:
         angle_error = theta_desired - self.current_position["theta"]
         ######### Your code ends here #########
 
+        if angle_error > math.pi:
+            angle_error -= 2 * math.pi
+        elif angle_error < -math.pi:
+            angle_error += 2 * math.pi
         return distance_error, angle_error
 
     def control_robot(self):
@@ -218,6 +222,7 @@ class ObstacleFreeWaypointController:
                     return
                 else:
                     self.goal_position = self.waypoints[current_waypoint_idx]
+                    continue
             else:
                 ctrl_msg.linear.x = self.baseVel
             if abs(angle_error) < .05:
