@@ -51,13 +51,33 @@ class PIDController:
         assert u_min < u_max, "u_min should be less than u_max"
         # initialize PID variables here
         ######### Your code starts here #########
-
+        self.kP = kP
+        self.kD = kD
+        self.kS = kS
+        self.kI = kI
+        self.u_min = u_min
+        self.u_max = u_max
+        self.t_prev = 0
+        self.err_prev = 0
+        self.integral = 0
         ######### Your code ends here #########
 
     def control(self, err, t):
         # compute PID control action here
         ######### Your code starts here #########
-
+        if self.t_prev == 0:
+            self.t_prev = t
+            self.err_prev = err
+        dt = t - self.t_prev
+        self.integral += err * dt
+        if dt <= 1e-6:
+            return 0
+        u = self.kP * err + self.kD * (err - self.err_prev) / dt + self.kS + self.kI * self.integral
+        u = max(u, self.u_min)
+        u = min(u, self.u_max)
+        self.t_prev = t
+        self.err_prev = err
+        return u
         ######### Your code ends here #########
 
 
@@ -71,13 +91,31 @@ class PDController:
         assert u_min < u_max, "u_min should be less than u_max"
         # Initialize PD variables here
         ######### Your code starts here #########
-
+        self.kP = kP
+        self.kD = kD
+        self.kS = kS
+        self.u_min = u_min
+        self.u_max = u_max
+        self.t_prev = 0
+        self.err_prev = 0
         ######### Your code ends here #########
 
     def control(self, err, t):
         dt = t - self.t_prev
         # Compute PD control action here
         ######### Your code starts here #########
+        dt = t - self.t_prev
+        # Compute PD control action here
+        ######### Your code starts here #########
+        dt = t - self.t_prev
+        if dt <= 1e-6:
+            return 0
+        u = self.kP * err + self.kD * (err - self.err_prev) / dt + self.kS
+        u = max(u, self.u_min)
+        u = min(u, self.u_max)
+        self.t_prev = t
+        self.err_prev = err
+        return u
 
         ######### Your code ends here #########
 
