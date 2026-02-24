@@ -221,6 +221,8 @@ class ObstacleFreeWaypointController:
             else:
                 uang = self.PconRota.control(angle_error, t)
                 ctrl_msg.angular.z = uang
+
+            self.robot_ctrl_pub.publish(ctrl_msg)
             ######### Your code ends here #########
             rate.sleep()
 
