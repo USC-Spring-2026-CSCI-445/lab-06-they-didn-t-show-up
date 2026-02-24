@@ -5,10 +5,7 @@ from math import radians, inf, sqrt, atan2, pi, isinf, cos, sin, degrees
 from time import sleep, time
 import queue
 import math
-<<<<<<< HEAD
 
-=======
->>>>>>> aa8dfecb832f7e469577c4c34a578b334f078d57
 import rospy
 from geometry_msgs.msg import Twist, Point32, Vector3, Quaternion, Point
 from nav_msgs.msg import Odometry
