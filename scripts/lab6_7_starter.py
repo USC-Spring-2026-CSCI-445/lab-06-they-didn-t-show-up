@@ -342,7 +342,26 @@ class ObstacleAvoidingWaypointController:
         ctrl_msg = Twist()
 
         ######### Your code starts here #########
-
+        t = time()
+        cone_angle = radians(5)
+        distances = self.laserscan_distances_to_point(self.waypoints[self.index], cone_angle)
+        if self.current_position is None or self.laserscan is None:
+                ctrl_msg.linear.x = 0
+                ctrl_msg.linear.y = 0
+                ctrl_msg.angular.z = 0
+                return ctrl_msg
+        distance = min(distances)
+        distance_error = 1 - distance
+        ######### Your code starts here #########
+        if abs(distance) < .05:
+                ctrl_msg.linear.x = 0
+                ctrl_msg.linear.y = 0
+        else:
+                ctrl_msg.linear.x = self.baseVel
+        
+        
+        uang = self.PconRota.control(distance_error, t)
+        ctrl_msg.angular.z = uang
         ######### Your code ends here #########
 
         self.robot_ctrl_pub.publish(ctrl_msg)
@@ -441,7 +460,7 @@ class ObstacleAvoidingWaypointController:
             if self.current_position is None or self.laserscan is None:
                 sleep(0.01)
                 continue
-            
+
             distance = min(distances)
             if distance < self.wall_following_desired_distance:
                 msg = self.obstacle_avoiding_control()  #Function not complete
