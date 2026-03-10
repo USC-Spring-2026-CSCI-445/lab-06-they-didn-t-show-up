@@ -261,8 +261,8 @@ class ObstacleAvoidingWaypointController:
         self.baseVel = .1
         self.distance = None
         self.index = 0
-        self.PconWayP = PIDController(1,.1,1,0, -2.84, 2.84) # waypoint following
-        self.PconObst = PIDController(1,.1,1,0, -2.84, 2.84) # Obstacle avoiding
+        self.PconRota = PIDController(1,.1,1,0, -2.84, 2.84) # waypoint following
+        self.PconObst = PDController(1,1,0, -2.84, 2.84) # Obstacle avoiding
         ######### Your code ends here #########
 
     def robot_laserscan_callback(self, msg: LaserScan):
@@ -334,9 +334,9 @@ class ObstacleAvoidingWaypointController:
         
         ######### Your code ends here #########
 
-        rospy.loginfo(
-            f"distance to target: {distance_error:.2f}\tangle error: {angle_error:.2f}\tcommanded linear vel: {cmd_linear_vel:.2f}\tcommanded angular vel: {cmd_angular_vel:.2f}"
-        )
+        #rospy.loginfo(
+        #    f"distance to target: {distance_error:.2f}\tangle error: {angle_error:.2f}\tcommanded linear vel: {cmd_linear_vel:.2f}\tcommanded angular vel: {cmd_angular_vel:.2f}"
+        #)
         return ctrl_msg
 
     def obstacle_avoiding_control(self, visualize: bool = True):
@@ -357,7 +357,7 @@ class ObstacleAvoidingWaypointController:
                 ctrl_msg.linear.x = self.baseVel
         
         
-        uang = self.PconRota.control(distance_error, t)
+        uang = self.PconObst.control(distance_error, t)
         ctrl_msg.angular.z = uang
         ######### Your code ends here #########
 

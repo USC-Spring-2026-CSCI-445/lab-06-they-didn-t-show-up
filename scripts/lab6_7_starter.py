@@ -257,8 +257,11 @@ class ObstacleAvoidingWaypointController:
 
         # Add PID controllers here for obstacle avoidance and waypoint following
         ######### Your code starts here #########
+        self.baseVel = .1
+        self.distance = None
         self.index = 0
-        self.PconWayP = PIDController(1,.1,1,0, -2.84, 2.84) # waypoint following
+        self.PconRota = PIDController(1,.1,1,0, -2.84, 2.84) # waypoint following
+        self.PconObst = PDController(1,1,0, -2.84, 2.84) # Obstacle avoiding
         ######### Your code ends here #########
 
     def sensor_state_callback(self, state: SensorState):
@@ -299,20 +302,20 @@ class ObstacleAvoidingWaypointController:
         ######### Your code starts here #########
         ctrl_msg = Twist()
 
-        distance_error = math.sqrt((goal_position["x"] - self.current_position["x"])**2 + (self.goal_position["y"] - self.current_position["y"])**2)
+        distance_error = sqrt((goal_position["x"] - self.current_position["x"])**2 + (self.goal_position["y"] - self.current_position["y"])**2)
 
         dx = goal_position["x"] - self.current_position["x"]
         dy = goal_position["y"] - self.current_position["y"]
 
-        theta_desired = math.atan2(dy, dx)
+        theta_desired = atan2(dy, dx)
         if theta_desired < 0:
-            theta_desired = 2 * math.pi + theta_desired
+            theta_desired = 2 * pi + theta_desired
         angle_error = theta_desired - self.current_position["theta"]
 
-        if angle_error > math.pi:
-            angle_error -= 2 * math.pi
-        elif angle_error < -math.pi:
-            angle_error += 2 * math.pi
+        if angle_error > pi:
+            angle_error -= 2 * pi
+        elif angle_error < -pi:
+            angle_error += 2 * pi
         
         t = time()
 
@@ -340,31 +343,26 @@ class ObstacleAvoidingWaypointController:
     def obstacle_avoiding_control(self, visualize: bool = True):
 
         ctrl_msg = Twist()
-
-        ######### Your code starts here #########
         t = time()
-        cone_angle = radians(5)
-        distances = self.laserscan_distances_to_point(self.waypoints[self.index], cone_angle)
-        if self.current_position is None or self.laserscan is None:
+        if self.distance is None:
                 ctrl_msg.linear.x = 0
                 ctrl_msg.linear.y = 0
                 ctrl_msg.angular.z = 0
                 return ctrl_msg
-        distance = min(distances)
-        distance_error = 1 - distance
+        distance_error = 1 - self.distance
         ######### Your code starts here #########
-        if abs(distance) < .05:
+        if abs(self.distance) < .05:
                 ctrl_msg.linear.x = 0
                 ctrl_msg.linear.y = 0
         else:
                 ctrl_msg.linear.x = self.baseVel
         
         
-        uang = self.PconRota.control(distance_error, t)
+        uang = self.PconObst.control(distance_error, t)
         ctrl_msg.angular.z = uang
         ######### Your code ends here #########
 
-        self.robot_ctrl_pub.publish(ctrl_msg)
+        return ctrl_msg
         print(
             f"dist: {round(self.ir_distance, 4)}\ttgt: {round(self.wall_following_desired_distance, 4)}\tu: {round(u, 4)}"
         )
@@ -461,7 +459,10 @@ class ObstacleAvoidingWaypointController:
                 sleep(0.01)
                 continue
 
-            distance = min(distances)
+            if distances:
+                distance = min(distances)
+            else:
+                distance = float("inf")
             if distance < self.wall_following_desired_distance:
                 msg = self.obstacle_avoiding_control()  #Function not complete
             else:
