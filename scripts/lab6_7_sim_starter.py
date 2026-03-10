@@ -446,7 +446,7 @@ class ObstacleAvoidingWaypointController:
 
         #current_waypoint_idx = 0
         distance_from_wall_safety = 1.0 #idk what this is for
-        cone_angle = radians(5)
+        cone_angle = radians(15)
 
         while not rospy.is_shutdown():
             distances = self.laserscan_distances_to_point(self.waypoints[self.index], cone_angle)
