@@ -257,6 +257,7 @@ class ObstacleAvoidingWaypointController:
 
         # Add PID controllers here for obstacle avoidance and waypoint following
         ######### Your code starts here #########
+        self.distance = None
         self.index = 0
         self.PconWayP = PIDController(1,.1,1,0, -2.84, 2.84) # waypoint following
         self.PconObst = PIDController(1,.1,1,0, -2.84, 2.84) # Obstacle avoiding
@@ -340,17 +341,14 @@ class ObstacleAvoidingWaypointController:
 
         ctrl_msg = Twist()
         t = time()
-        cone_angle = radians(5)
-        distances = self.laserscan_distances_to_point(self.waypoints[self.index], cone_angle)
-        if self.current_position is None or self.laserscan is None:
+        if self.distance is None:
                 ctrl_msg.linear.x = 0
                 ctrl_msg.linear.y = 0
                 ctrl_msg.angular.z = 0
                 return ctrl_msg
-        distance = min(distances)
-        distance_error = 1 - distance
+        distance_error = 1 - self.distance
         ######### Your code starts here #########
-        if abs(distance) < .05:
+        if abs(self.distance) < .05:
                 ctrl_msg.linear.x = 0
                 ctrl_msg.linear.y = 0
         else:
@@ -456,6 +454,7 @@ class ObstacleAvoidingWaypointController:
                 sleep(0.01)
                 continue
             distance = min(distances)
+            self.distance = distance
             if distance < self.wall_following_desired_distance:
                 msg = self.obstacle_avoiding_control()  #Function not complete
             else:
