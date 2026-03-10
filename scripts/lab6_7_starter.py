@@ -171,20 +171,20 @@ class ObstacleFreeWaypointController:
 
         # Calculate error in position and orientation
         ######### Your code starts here #########
-        distance_error = math.sqrt((goal_position["x"] - self.current_position["x"])**2 + (goal_position["y"] - self.current_position["y"])**2)
+        distance_error = sqrt((goal_position["x"] - self.current_position["x"])**2 + (goal_position["y"] - self.current_position["y"])**2)
 
         dx = goal_position["x"] - self.current_position["x"]
         dy = goal_position["y"] - self.current_position["y"]
 
-        theta_desired = math.atan2(dy, dx)
+        theta_desired = atan2(dy, dx)
         if theta_desired < 0:
-            theta_desired = 2 * math.pi + theta_desired
+            theta_desired = 2 * pi + theta_desired
         angle_error = theta_desired - self.current_position["theta"]
 
-        if angle_error > math.pi:
-            angle_error -= 2 * math.pi
-        elif angle_error < -math.pi:
-            angle_error += 2 * math.pi
+        if angle_error > pi:
+            angle_error -= 2 * pi
+        elif angle_error < -pi:
+            angle_error += 2 * pi
 
         ######### Your code ends here #########
 
