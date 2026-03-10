@@ -259,6 +259,7 @@ class ObstacleAvoidingWaypointController:
         ######### Your code starts here #########
         self.index = 0
         self.PconWayP = PIDController(1,.1,1,0, -2.84, 2.84) # waypoint following
+        self.PconObst = PIDController(1,.1,1,0, -2.84, 2.84) # Obstacle avoiding
         ######### Your code ends here #########
 
     def robot_laserscan_callback(self, msg: LaserScan):
@@ -338,12 +339,29 @@ class ObstacleAvoidingWaypointController:
     def obstacle_avoiding_control(self, visualize: bool = True):
 
         ctrl_msg = Twist()
-
+        t = time()
+        cone_angle = radians(5)
+        distances = self.laserscan_distances_to_point(self.waypoints[self.index], cone_angle)
+        if self.current_position is None or self.laserscan is None:
+                ctrl_msg.linear.x = 0
+                ctrl_msg.linear.y = 0
+                ctrl_msg.angular.z = 0
+                return ctrl_msg
+        distance = min(distances)
+        distance_error = 1 - distance
         ######### Your code starts here #########
-
+        if abs(distance) < .05:
+                ctrl_msg.linear.x = 0
+                ctrl_msg.linear.y = 0
+        else:
+                ctrl_msg.linear.x = self.baseVel
+        
+        
+        uang = self.PconRota.control(distance_error, t)
+        ctrl_msg.angular.z = uang
         ######### Your code ends here #########
 
-        self.robot_ctrl_pub.publish(ctrl_msg)
+        return ctrl_msg
         print(
             f"dist: {round(self.ir_distance, 4)}\ttgt: {round(self.wall_following_desired_distance, 4)}\tu: {round(u, 4)}"
         )
