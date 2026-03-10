@@ -257,6 +257,8 @@ class ObstacleAvoidingWaypointController:
 
         # Add PID controllers here for obstacle avoidance and waypoint following
         ######### Your code starts here #########
+        
+        self.baseVel = .1
         self.distance = None
         self.index = 0
         self.PconWayP = PIDController(1,.1,1,0, -2.84, 2.84) # waypoint following
