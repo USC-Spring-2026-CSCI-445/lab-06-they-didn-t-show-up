@@ -294,7 +294,7 @@ class ObstacleAvoidingWaypointController:
 
         # Calculate error in position and orientation
         ######### Your code starts here #########
-        distance_error = math.sqrt((goal_position["x"] - self.current_position["x"])**2 + (self.goal_position["y"] - self.current_position["y"])**2)
+        distance_error = math.sqrt((goal_position["x"] - self.current_position["x"])**2 + (goal_position["y"] - self.current_position["y"])**2)
 
         dx = goal_position["x"] - self.current_position["x"]
         dy = goal_position["y"] - self.current_position["y"]
