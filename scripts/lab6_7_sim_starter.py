@@ -453,7 +453,10 @@ class ObstacleAvoidingWaypointController:
             if self.current_position is None or self.laserscan is None:
                 sleep(0.01)
                 continue
-            distance = min(distances)
+            if distances:
+                distance = min(distances)
+            else:
+                distance = float("inf")
             self.distance = distance
             if distance < self.wall_following_desired_distance:
                 msg = self.obstacle_avoiding_control()  #Function not complete
